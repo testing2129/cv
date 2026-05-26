@@ -1,48 +1,54 @@
 // Language Switcher
-function getCurrentLanguage() {
-  const host = window.location.hostname;
-  const parts = host.split('.');
-  
-  // Check if first part is language code (sv or en) or if path contains /sv/
-  if (parts.length > 1 && parts[0] === 'sv') {
-    return 'sv';
-  }
-  
-  // Check path for /sv/
-  if (window.location.pathname.startsWith('/sv/')) {
-    return 'sv';
-  }
-  
-  return 'en'; // Default to English
+function getBasePath() {
+  let path = window.location.pathname;
+  path = path.replace(/\/sv\/?$/, '').replace(/\/sv\//, '/');
+  path = path.replace(/index\.html$/, '');
+  path = path.replace(/\/$/, '');
+  return path || '/';
 }
 
 function switchLanguage(lang) {
-  let newHost = window.location.hostname;
-  const parts = newHost.split('.');
+  const basePath = getBasePath();
   const currentPath = window.location.pathname;
-  let newPath = currentPath;
+  const hash = window.location.hash;
   
-  // Handle subdomain approach
+  console.log('switchLanguage called with lang:', lang);
+  console.log('basePath:', basePath);
+  console.log('currentPath:', currentPath);
+  
   if (lang === 'sv') {
-    if (parts[0] !== 'sv' && parts.length > 1) {
-      newHost = 'sv.' + parts.slice(1).join('.');
-    } else if (parts[0] !== 'sv') {
-      newHost = 'sv.' + newHost;
+    if (currentPath.includes('/sv/')) {
+      console.log('Already on Swedish');
+      return;
     }
+    console.log('Navigating to:', basePath + '/sv/' + hash);
+    window.location.href = basePath + '/sv/' + hash;
   } else if (lang === 'en') {
-    if (parts[0] === 'sv') {
-      newHost = parts.slice(1).join('.');
+    if (!currentPath.includes('/sv/')) {
+      console.log('Already on English');
+      return;
     }
+    console.log('Navigating to:', basePath + '/' + hash);
+    window.location.href = basePath + '/' + hash;
   }
-  
-  window.location.href = window.location.protocol + '//' + newHost + newPath + window.location.search + window.location.hash;
 }
 
-// Handle language link clicks
-$(document).on('click', '.lang-link', function(e) {
-  e.preventDefault();
-  const lang = $(this).data('lang');
-  switchLanguage(lang);
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded - Attaching language switcher');
+  
+  // Find all lang-link elements
+  const langLinks = document.querySelectorAll('.lang-link');
+  console.log('Found lang-link elements:', langLinks.length);
+  
+  langLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const lang = this.getAttribute('data-lang');
+      console.log('Language link clicked:', lang);
+      switchLanguage(lang);
+    });
+  });
 });
 
 // Add your javascript here
