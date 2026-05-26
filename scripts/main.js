@@ -1,3 +1,50 @@
+// Language Switcher
+function getCurrentLanguage() {
+  const host = window.location.hostname;
+  const parts = host.split('.');
+  
+  // Check if first part is language code (sv or en) or if path contains /sv/
+  if (parts.length > 1 && parts[0] === 'sv') {
+    return 'sv';
+  }
+  
+  // Check path for /sv/
+  if (window.location.pathname.startsWith('/sv/')) {
+    return 'sv';
+  }
+  
+  return 'en'; // Default to English
+}
+
+function switchLanguage(lang) {
+  let newHost = window.location.hostname;
+  const parts = newHost.split('.');
+  const currentPath = window.location.pathname;
+  let newPath = currentPath;
+  
+  // Handle subdomain approach
+  if (lang === 'sv') {
+    if (parts[0] !== 'sv' && parts.length > 1) {
+      newHost = 'sv.' + parts.slice(1).join('.');
+    } else if (parts[0] !== 'sv') {
+      newHost = 'sv.' + newHost;
+    }
+  } else if (lang === 'en') {
+    if (parts[0] === 'sv') {
+      newHost = parts.slice(1).join('.');
+    }
+  }
+  
+  window.location.href = window.location.protocol + '//' + newHost + newPath + window.location.search + window.location.hash;
+}
+
+// Handle language link clicks
+$(document).on('click', '.lang-link', function(e) {
+  e.preventDefault();
+  const lang = $(this).data('lang');
+  switchLanguage(lang);
+});
+
 // Add your javascript here
 // Don't forget to add it into respective layouts where this js file is needed
 
